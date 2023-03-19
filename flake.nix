@@ -24,6 +24,7 @@
           packages = {
             dateilager = dateilager;
             deno = pkgs.deno;
+            go-migrate = pkgs.go-migrate.overrideAttrs (attrs: { buildFlagsArray = [ "-tags=postgres" ]; });
             mkcert = pkgs.mkcert;
             nc = pkgs.netcat;
             postgresql = pkgs.postgresql;
