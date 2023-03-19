@@ -27,6 +27,7 @@ runs:
       with:
         path: |
           ~/.cache/deno
+          ~/Library/Caches/deno
         key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
         restore-keys: |
           ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
