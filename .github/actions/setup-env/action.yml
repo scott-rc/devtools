@@ -37,3 +37,17 @@ runs:
       run: |
         deno cache ./src/deps.ts
         deno cache ./test/deps.ts
+
+    - if: ${{ runner.os == 'macOS' }}
+      name: Setup mkcert
+      shell: bash -l {0}
+      run: |
+        # Unlock the runner's keychain so mkcert's root-level cert installation stuff works
+        # On real development machines this throws up a gui prompt that a human fills in
+        security unlock-keychain -p runner login.keychain
+        sudo security authorizationdb write com.apple.trust-settings.admin allow
+
+    - name: Install mkcert
+      shell: bash -l {0}
+      run: |
+        mkcert -install

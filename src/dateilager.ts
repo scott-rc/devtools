@@ -63,7 +63,6 @@ export class DateiLager {
 
     if (!await this.options.cert.exists() || !await this.options.key.exists()) {
       await this.options.data.mkdir();
-      await $`mkcert -install`.withOptions(options);
       await $`mkcert -cert-file ${this.options.cert} -key-file ${this.options.key} localhost 127.0.0.1 ::1`
         .withOptions(options);
     }
