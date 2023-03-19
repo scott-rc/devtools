@@ -10,16 +10,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1676389337,
-        "narHash": "sha256-4HceUkojrTfTm1eMwPI5umde7k1Z0Yu7gf+VquiJQKM=",
+        "lastModified": 1678719678,
+        "narHash": "sha256-730a6bdqRGrIRvEuWfPs1qAg5BTWQ2yzVYvTJDH1W1g=",
         "owner": "gadget-inc",
         "repo": "dateilager",
-        "rev": "4cd01d5e5108285bf2296cadfccf180681e81f8b",
+        "rev": "2c4729904b02c1d83f1246fe63ead1e10ce73918",
         "type": "github"
       },
       "original": {
         "owner": "gadget-inc",
-        "ref": "v0.5.3",
+        "ref": "v0.5.6",
         "repo": "dateilager",
         "type": "github"
       }
@@ -41,11 +41,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1679185842,
-        "narHash": "sha256-wZxszGWNsXQn7dFovu8l/RCFFJlGoGzwuiaVSI7Hcmw=",
+        "lastModified": 1679189244,
+        "narHash": "sha256-uc+w/FW87cfDMWrbeOIwJoltLvfYLaxHW8JrqCDblpM=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "9edf96f03e3cf1f36da70c1666bf3bbf9d31931a",
+        "rev": "38637c5c8fddf9c5b454918acf309c55e3809af1",
         "type": "github"
       },
       "original": {
