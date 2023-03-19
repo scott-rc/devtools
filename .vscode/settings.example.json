@@ -1,0 +1,21 @@
+{
+  "files.associations": {
+    "settings.example.json": "jsonc"
+  },
+
+  // deno
+  "deno.enable": true,
+  "deno.lint": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+
+  // cspell
+  "cSpell.customDictionaries": {
+    "cspell": {
+      "description": "Custom dictionary for cspell",
+      "path": "${workspaceRoot}/.vscode/cspell.txt",
+      "addWords": true
+    }
+  }
+}

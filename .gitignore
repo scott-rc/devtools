@@ -1,0 +1,6 @@
+.direnv
+.vscode/*
+!.vscode/cspell.txt
+!.vscode/settings.example.json
+node_modules
+tmp
