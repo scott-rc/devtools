@@ -9,7 +9,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 defaults:
   run:
-    shell: bash -l {0}
+    shell: bash -l {0} # Use the login shell that our setup-env action sets up
 
 jobs:
   ci:
