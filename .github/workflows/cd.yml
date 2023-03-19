@@ -1,0 +1,16 @@
+name: cd
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml

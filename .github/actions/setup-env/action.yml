@@ -1,0 +1,39 @@
+name: "Set up environment"
+description: ""
+inputs:
+  CACHIX_AUTH_TOKEN:
+    description: "Cachix authentication token"
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Install nix
+      uses: nixbuild/nix-quick-install-action@v22
+      with:
+        nix_conf: experimental-features = nix-command flakes
+
+    - uses: cachix/cachix-action@v12
+      with:
+        name: devtools
+        authToken: "${{ inputs.CACHIX_AUTH_TOKEN }}"
+        extraPullNames: nix-community
+
+    - name: Add nix devshell to .bash_profile
+      shell: bash
+      run: nix print-dev-env --show-trace >> "$HOME/.bash_profile"
+
+    - name: Cache Deno modules
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/deno
+        key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
+          ${{ runner.os }}-deno-
+
+    - name: Download Deno modules
+      shell: bash -l {0}
+      run: |
+        deno cache ./src/deps.ts
+        deno cache ./test/deps.ts

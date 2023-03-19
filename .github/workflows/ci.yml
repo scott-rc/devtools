@@ -1,0 +1,44 @@
+name: ci
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    branches-ignore:
+      - main # Already handled by cd.yml
+
+defaults:
+  run:
+    shell: bash -l {0} # Use the login shell that our setup-env action sets up
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+        with:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Deno lint
+        run: deno lint
+
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+        with:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Deno test
+        run: deno test
