@@ -1,6 +1,6 @@
 import { killChildProcesses, onShutdownSignal, onUncaughtException } from "../src/command.ts";
 import { DateiLager } from "../src/dateilager.ts";
-import { colors } from "../src/deps.ts";
+import { colors, delay } from "../src/deps.ts";
 import { logger } from "../src/logger.ts";
 import { Postgres } from "../src/postgres.ts";
 import { Redis } from "../src/redis.ts";
@@ -33,6 +33,10 @@ try {
 
   const toxiproxy = new ToxiProxy();
   await toxiproxy.start({ padStart: 1 });
+
+  await delay(5000);
+
+  await killChildProcesses();
 } catch (error) {
   logger.error(colors.bold(colors.red("ERROR RUNNING SERVICES")), { error });
   await killChildProcesses();

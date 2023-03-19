@@ -42,3 +42,20 @@ jobs:
 
       - name: Deno test
         run: deno test
+
+  examples:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+        with:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Services
+        run: services
