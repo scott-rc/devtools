@@ -14,37 +14,36 @@
   };
 
   outputs = { self, nixpkgs, flake-utils, dateilager-flake }:
-    (flake-utils.lib.eachDefaultSystem
-      (system: nixpkgs.lib.fix (flake:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          dateilager = dateilager-flake.defaultPackage.${system};
-        in
-        {
-          packages = {
-            dateilager = dateilager;
-            deno = pkgs.deno;
-            go-migrate = pkgs.go-migrate.overrideAttrs (attrs: { buildFlagsArray = [ "-tags=postgres" ]; });
-            mkcert = pkgs.mkcert;
-            nc = pkgs.netcat;
-            postgresql = pkgs.postgresql;
-            redis = pkgs.redis;
-            rnix-lsp = pkgs.rnix-lsp;
-            toxiproxy = pkgs.toxiproxy;
+    (flake-utils.lib.eachDefaultSystem (system: nixpkgs.lib.fix (flake:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+        dateilager = dateilager-flake.defaultPackage.${system};
+      in
+      {
+        packages = {
+          dateilager = dateilager;
+          deno = pkgs.deno;
+          go-migrate = pkgs.go-migrate.overrideAttrs (attrs: { buildFlagsArray = [ "-tags=postgres" ]; });
+          mkcert = pkgs.mkcert;
+          nc = pkgs.netcat;
+          postgresql = pkgs.postgresql;
+          redis = pkgs.redis;
+          rnix-lsp = pkgs.rnix-lsp;
+          toxiproxy = pkgs.toxiproxy;
 
-            services = pkgs.writeShellScriptBin "services" ''
-              export DL_MIGRATION_DIR=${dateilager.migrations}
-              deno run -A "$WORKSPACE_ROOT"/examples/services.ts "$@"
-            '';
-          };
+          services = pkgs.writeShellScriptBin "services" ''
+            export DL_MIGRATION_DIR=${dateilager.migrations}
+            deno run -A "$WORKSPACE_ROOT"/examples/services.ts "$@"
+          '';
+        };
 
-          devShell = pkgs.mkShell {
-            packages = builtins.attrValues flake.packages;
+        devShell = pkgs.mkShell {
+          packages = builtins.attrValues flake.packages;
 
-            shellHook = ''
-              export WORKSPACE_ROOT="$PWD"
-            '';
-          };
-        }
-      )));
+          shellHook = ''
+            export WORKSPACE_ROOT="$PWD"
+          '';
+        };
+      }
+    )));
 }
