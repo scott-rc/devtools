@@ -38,7 +38,7 @@ jobs:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
       - name: Deno test
-        run: deno test
+        run: deno test --allow-all
 
   examples:
     strategy:
