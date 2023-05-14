@@ -6,12 +6,10 @@ export * as stdFs from "https://deno.land/std@0.178.0/fs/mod.ts";
 export { LogLevelNames } from "https://deno.land/std@0.178.0/log/levels.ts";
 export * as stdYaml from "https://deno.land/std@0.178.0/encoding/yaml.ts";
 export * as stdColors from "https://deno.land/std@0.178.0/fmt/colors.ts";
-export * from "https://deno.land/std@0.178.0/async/mod.ts";
-export type { DeepMerge, DeepMergeOptions } from "https://deno.land/std@0.178.0/collections/deep_merge.ts";
-export { assert } from "https://deno.land/std@0.178.0/testing/asserts.ts";
-export { concat } from "https://deno.land/std@0.178.0/bytes/mod.ts";
-export { deepMerge } from "https://deno.land/std@0.178.0/collections/deep_merge.ts";
-export { mapValues } from "https://deno.land/std@0.178.0/collections/map_values.ts";
+export * as stdAsync from "https://deno.land/std@0.178.0/async/mod.ts";
+export * as stdDeepMerge from "https://deno.land/std@0.178.0/collections/deep_merge.ts";
+export * as stdAsserts from "https://deno.land/std@0.178.0/testing/asserts.ts";
+export * as stdBytes from "https://deno.land/std@0.178.0/bytes/mod.ts";
 
 // postgres
 export { default as postgres } from "https://deno.land/x/postgresjs@v3.3.3/mod.js";

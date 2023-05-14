@@ -1,10 +1,10 @@
-import { deepMerge, DeepMergeOptions, PartialDeep } from "./deps.ts";
+import { PartialDeep, stdDeepMerge } from "./deps.ts";
 
 // deno-lint-ignore ban-types
 export function defaults<T extends {}>(
   passed: PartialDeep<T>,
   defaults: T,
-  deepMergeOptions?: Readonly<DeepMergeOptions>,
+  deepMergeOptions?: Readonly<stdDeepMerge.DeepMergeOptions>,
 ): T {
-  return deepMerge(defaults, passed, deepMergeOptions) as T;
+  return stdDeepMerge.deepMerge(defaults, passed, deepMergeOptions) as T;
 }

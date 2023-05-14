@@ -1,4 +1,4 @@
-import { assert, concat, serializeError, shell, stdColors } from "./deps.ts";
+import { serializeError, shell, stdAsserts, stdBytes, stdColors } from "./deps.ts";
 import { logger } from "./logger.ts";
 import { Path } from "./path.ts";
 import { defaults } from "./utils.ts";
@@ -197,7 +197,7 @@ export class ChildProcess implements PromiseLike<void> {
   }
 
   get status(): Deno.CommandStatus {
-    assert(
+    stdAsserts.assert(
       this.#status != null,
       "ChildProcess is still running. Either `await` it or check `isRunning` before accessing `status`",
     );
@@ -257,7 +257,7 @@ export class ChildProcess implements PromiseLike<void> {
               buffer.push(prefix, encoder.encode(line), newline);
             }
 
-            await Deno[streamName].write(concat(...buffer));
+            await Deno[streamName].write(stdBytes.concat(...buffer));
           }
         })();
       }
@@ -283,7 +283,7 @@ export class ChildProcess implements PromiseLike<void> {
   }
 
   async waitForStartupProbe(): Promise<void> {
-    assert(this.command.options.startupProbe, `${this.command.options.name} does not have a startup probe`);
+    stdAsserts.assert(this.command.options.startupProbe, `${this.command.options.name} does not have a startup probe`);
 
     try {
       // wait for either the command to finish or the startup probe to succeed

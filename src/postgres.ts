@@ -1,4 +1,4 @@
-import { deepMerge, PartialDeep, postgres, retry, stdColors } from "./deps.ts";
+import { PartialDeep, postgres, stdAsync, stdColors, stdDeepMerge } from "./deps.ts";
 import { $, PartialCommandOptions } from "./command.ts";
 import { defaults } from "./utils.ts";
 import { dataRoot, logRoot, Path } from "./path.ts";
@@ -27,7 +27,7 @@ export class Postgres<T extends Record<string, postgres.PostgresType> = Record<s
 
   clone(options: PartialDeep<PostgresOptions<T>>): Postgres<T> {
     // deno-lint-ignore no-explicit-any
-    return new Postgres(deepMerge(this.options as any, options));
+    return new Postgres(stdDeepMerge.deepMerge(this.options as any, options));
   }
 
   async start(options: PartialCommandOptions = {}): Promise<void> {
@@ -35,7 +35,7 @@ export class Postgres<T extends Record<string, postgres.PostgresType> = Record<s
       name: "postgres",
       color: stdColors.blue,
       logFile: logRoot.join(`${options.name ?? "postgres"}.log`),
-      startupProbe: () => retry(() => this.sql`SELECT 1`, { maxTimeout: 1000 }),
+      startupProbe: () => stdAsync.retry(() => this.sql`SELECT 1`, { maxTimeout: 1000 }),
       killSignal: "SIGINT", // postgres takes a long time to shutdown when sent SIGTERM
       env: {
         PGUSER: this.parsedOptions.user,

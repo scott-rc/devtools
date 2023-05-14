@@ -1,4 +1,4 @@
-import { outdent, retry, stdColors } from "./deps.ts";
+import { outdent, stdAsync, stdColors } from "./deps.ts";
 import { dataRoot, logRoot, Path } from "./path.ts";
 import { Postgres } from "./postgres.ts";
 import { $, CommandOptions } from "./command.ts";
@@ -47,7 +47,8 @@ export class DateiLager {
       name: "dateilager",
       color: stdColors.magenta,
       logFile: logRoot.join(`${options.name ?? "dateilager"}.log`),
-      startupProbe: () => retry(() => $`nc -z ${this.options.host} ${this.options.port}`.quiet(), { maxTimeout: 1000 }),
+      startupProbe: () =>
+        stdAsync.retry(() => $`nc -z ${this.options.host} ${this.options.port}`.quiet(), { maxTimeout: 1000 }),
       env: {
         DL_ENV: "dev",
       },

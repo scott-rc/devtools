@@ -1,4 +1,4 @@
-import { assert, LogLevelNames, serializeError, stdColors, stdDatetime, stdLog, stdYaml } from "./deps.ts";
+import { LogLevelNames, serializeError, stdAsserts, stdColors, stdDatetime, stdLog, stdYaml } from "./deps.ts";
 import { logRoot } from "./path.ts";
 import { defaults } from "./utils.ts";
 
@@ -107,7 +107,7 @@ export const logger = new DevtoolsLogger();
 export function formatFields(prefix: string, record: stdLog.LogRecord): string {
   if (record.args.length === 0 || record.args[0] == null) return "";
 
-  assert(
+  stdAsserts.assert(
     record.args.length === 1 && typeof record.args[0] === "object" && !Array.isArray(record.args[0]),
     "arguments must be a single object of key/value pairs",
   );

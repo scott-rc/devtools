@@ -1,6 +1,6 @@
 import { killChildProcesses, onShutdownSignal, onUncaughtException } from "../src/command.ts";
 import { DateiLager } from "../src/dateilager.ts";
-import { delay, stdColors } from "../src/deps.ts";
+import { stdAsync, stdColors } from "../src/deps.ts";
 import { logger } from "../src/logger.ts";
 import { Postgres } from "../src/postgres.ts";
 import { Redis } from "../src/redis.ts";
@@ -34,7 +34,7 @@ try {
   const toxiproxy = new ToxiProxy();
   await toxiproxy.start({ padStart: 1 });
 
-  await delay(5000);
+  await stdAsync.delay(5000);
 
   await killChildProcesses();
 } catch (error) {
