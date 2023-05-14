@@ -5,7 +5,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
     dateilager-flake = {
-      url = "github:gadget-inc/dateilager/v0.5.6";
+      url = "github:gadget-inc/dateilager/v0.5.17";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         flake-utils.follows = "flake-utils";
