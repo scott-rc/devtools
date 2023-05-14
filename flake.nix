@@ -2,7 +2,7 @@
   description = "Gadget devtools development environment";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     dateilager-flake = {
       url = "github:gadget-inc/dateilager/v0.5.17";
