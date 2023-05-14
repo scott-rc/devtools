@@ -1,13 +1,13 @@
 import { $, PartialCommandOptions } from "./command.ts";
-import { colors, PathRef, retry } from "./deps.ts";
-import { dataRoot, logRoot } from "./path.ts";
+import { retry, stdColors } from "./deps.ts";
+import { dataRoot, logRoot, Path } from "./path.ts";
 import { defaults } from "./utils.ts";
 
 interface ToxiProxyOptions {
   host: string;
   port: number;
   logLevel: "panic" | "fatal" | "error" | "warn" | "info" | "debug" | "trace";
-  config: PathRef | {
+  config: Path | {
     name: string;
     listen: string;
     upstream: string;
@@ -30,7 +30,7 @@ export class ToxiProxy {
   async start(options: PartialCommandOptions = {}): Promise<void> {
     options = defaults(options, {
       name: "toxiproxy",
-      color: colors.yellow,
+      color: stdColors.yellow,
       logFile: logRoot.join(`${options.name ?? "toxiproxy"}.log`),
       startupProbe: () => retry(() => $`nc -z ${this.options.host} ${this.options.port}`.quiet(), { maxTimeout: 1000 }),
       expectedExitCodes: [0, 130], // toxiproxy-server exits with 130 when it receives SIGINT (Ctrl+C)

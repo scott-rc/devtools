@@ -1,10 +1,10 @@
 import { $, PartialCommandOptions } from "./command.ts";
-import { colors, PathRef, redis, RedisConnection, RedisConnectOptions } from "./deps.ts";
-import { dataRoot, logRoot } from "./path.ts";
+import { redis, RedisConnection, RedisConnectOptions, stdColors } from "./deps.ts";
+import { dataRoot, logRoot, Path } from "./path.ts";
 import { defaults } from "./utils.ts";
 
 interface RedisOptions extends RedisConnectOptions {
-  data?: PathRef;
+  data?: Path;
 }
 
 export class Redis {
@@ -29,14 +29,14 @@ export class Redis {
   async start(options: PartialCommandOptions = {}): Promise<void> {
     options = defaults(options, {
       name: "redis",
-      color: colors.red,
+      color: stdColors.red,
       logFile: logRoot.join(`${options.name ?? "redis"}.log`),
       startupProbe: async () => this.#connection = await redis(this.options),
     });
 
     const extraFlags = [];
     if (this.options.data) {
-      await this.options.data.mkdir({ recursive: true });
+      await this.options.data.ensureDir();
       extraFlags.push(`--dir ${this.options.data}`);
     }
 

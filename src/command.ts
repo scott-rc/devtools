@@ -1,5 +1,6 @@
-import { assert, colors, concat, PathRef, serializeError, shell } from "./deps.ts";
+import { assert, concat, serializeError, shell, stdColors } from "./deps.ts";
 import { logger } from "./logger.ts";
+import { Path } from "./path.ts";
 import { defaults } from "./utils.ts";
 
 export function $(strings: TemplateStringsArray, ...exprs: unknown[]): Command {
@@ -44,7 +45,7 @@ export interface CommandOptions extends Deno.CommandOptions {
   /**
    * File to log the command output to.
    */
-  logFile?: PathRef;
+  logFile?: Path;
 
   /**
    * Exit codes that the command is expected to exit with.
@@ -116,7 +117,7 @@ export class Command implements PromiseLike<ChildProcess> {
     return new Command(this.cmd, { ...this.options, quiet });
   }
 
-  logFile(logFile: PathRef): Command {
+  logFile(logFile: Path): Command {
     return new Command(this.cmd, { ...this.options, logFile });
   }
 
@@ -225,8 +226,8 @@ export class ChildProcess implements PromiseLike<void> {
       let stream = process[streamName];
 
       if (this.command.options.logFile) {
-        this.command.options.logFile.parentOrThrow().mkdirSync({ recursive: true });
-        const file = this.command.options.logFile.openSync({ create: true, append: true });
+        this.command.options.logFile.ensureFileSync();
+        const file = Deno.openSync(this.command.options.logFile.toString(), { append: true });
 
         let fileStream;
         [stream, fileStream] = stream.tee();
@@ -337,7 +338,7 @@ export async function onUncaughtException(event: ErrorEvent | PromiseRejectionEv
   // prevent immediate exit
   event.preventDefault();
 
-  logger.error(colors.bold(colors.red("UNCAUGHT EXCEPTION")), {
+  logger.error(stdColors.bold(stdColors.red("UNCAUGHT EXCEPTION")), {
     event: "error" in event
       ? { type: event.type, cause: serializeError(event.error), message: event.message }
       : { type: event.type, cause: serializeError(event.reason) },

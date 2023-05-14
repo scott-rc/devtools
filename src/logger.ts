@@ -1,14 +1,14 @@
-import { assert, colors, datetime, log, LogLevelNames, serializeError, yaml } from "./deps.ts";
+import { assert, LogLevelNames, serializeError, stdColors, stdDatetime, stdLog, stdYaml } from "./deps.ts";
 import { logRoot } from "./path.ts";
 import { defaults } from "./utils.ts";
 
 interface DevtoolsConsoleOptions {
-  level: log.LevelName;
+  level: stdLog.LevelName;
   color: (s: string) => string;
   padStart: number;
 }
 
-const BaseHandler = log.handlers.BaseHandler;
+const BaseHandler = stdLog.handlers.BaseHandler;
 
 export class DevtoolsConsole extends BaseHandler {
   options: DevtoolsConsoleOptions;
@@ -20,7 +20,7 @@ export class DevtoolsConsole extends BaseHandler {
     this.padding = " ".repeat(options.padStart);
   }
 
-  override format(record: log.LogRecord): string {
+  override format(record: stdLog.LogRecord): string {
     const prefix = `${this.padding}${this.options.color(record.loggerName)}: `;
     const fields = formatFields(prefix, record);
     return `${prefix}${record.msg}${fields}`;
@@ -35,7 +35,7 @@ export class DevtoolsLogger {
   setup(options: Partial<DevtoolsConsoleOptions> = {}): void {
     const opts = defaults<DevtoolsConsoleOptions>(options, {
       level: "INFO",
-      color: colors.gray,
+      color: stdColors.gray,
       padStart: 0,
     });
 
@@ -44,10 +44,10 @@ export class DevtoolsLogger {
       const envLevel = Deno.env.get("LOG_LEVEL");
       if (envLevel) {
         if (LogLevelNames.includes(envLevel)) {
-          opts.level = envLevel as log.LevelName;
+          opts.level = envLevel as stdLog.LevelName;
         } else {
           console.warn(
-            colors.yellow(
+            stdColors.yellow(
               `Invalid LOG_LEVEL ${envLevel}. Must be one of ${LogLevelNames.join(", ")}. Using ${opts.level} instead.`,
             ),
           );
@@ -55,14 +55,14 @@ export class DevtoolsLogger {
       }
     }
 
-    log.setup({
+    stdLog.setup({
       handlers: {
         devtoolsConsole: new DevtoolsConsole(opts),
-        devtoolsFile: new log.handlers.FileHandler(opts.level, {
+        devtoolsFile: new stdLog.handlers.FileHandler(opts.level, {
           filename: logRoot.join("devtools.log").toString(),
           mode: "a",
           formatter(record) {
-            const prefix = `[${datetime.format(record.datetime, "yyyy-MM-dd HH:mm:ss")}] ${record.levelName} `;
+            const prefix = `[${stdDatetime.format(record.datetime, "yyyy-MM-dd HH:mm:ss")}] ${record.levelName} `;
             const fields = formatFields(prefix, record);
             return `${prefix}${record.msg}${fields}`;
           },
@@ -77,8 +77,8 @@ export class DevtoolsLogger {
     });
   }
 
-  get #logger(): log.Logger {
-    return log.getLogger("devtools");
+  get #logger(): stdLog.Logger {
+    return stdLog.getLogger("devtools");
   }
 
   debug(msg: string, fields?: Record<string, unknown>): void {
@@ -104,7 +104,7 @@ export class DevtoolsLogger {
 
 export const logger = new DevtoolsLogger();
 
-export function formatFields(prefix: string, record: log.LogRecord): string {
+export function formatFields(prefix: string, record: stdLog.LogRecord): string {
   if (record.args.length === 0 || record.args[0] == null) return "";
 
   assert(
@@ -119,7 +119,7 @@ export function formatFields(prefix: string, record: log.LogRecord): string {
   }
 
   const lines = [];
-  const str = yaml.stringify(fields, { skipInvalid: true });
+  const str = stdYaml.stringify(fields, { skipInvalid: true });
   for (const line of str.split("\n")) {
     if (!line) continue;
     lines.push(`\n${prefix}  ${line}`);

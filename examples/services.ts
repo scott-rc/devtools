@@ -1,6 +1,6 @@
 import { killChildProcesses, onShutdownSignal, onUncaughtException } from "../src/command.ts";
 import { DateiLager } from "../src/dateilager.ts";
-import { colors, delay } from "../src/deps.ts";
+import { delay, stdColors } from "../src/deps.ts";
 import { logger } from "../src/logger.ts";
 import { Postgres } from "../src/postgres.ts";
 import { Redis } from "../src/redis.ts";
@@ -38,7 +38,7 @@ try {
 
   await killChildProcesses();
 } catch (error) {
-  logger.error(colors.bold(colors.red("ERROR RUNNING SERVICES")), { error });
+  logger.error(stdColors.bold(stdColors.red("ERROR RUNNING SERVICES")), { error });
   await killChildProcesses();
   globalThis.addEventListener("unload", () => Deno.exit(1));
 }

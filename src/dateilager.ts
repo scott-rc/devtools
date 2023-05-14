@@ -1,5 +1,5 @@
-import { colors, outdent, PathRef, retry } from "./deps.ts";
-import { dataRoot, logRoot } from "./path.ts";
+import { outdent, retry, stdColors } from "./deps.ts";
+import { dataRoot, logRoot, Path } from "./path.ts";
 import { Postgres } from "./postgres.ts";
 import { $, CommandOptions } from "./command.ts";
 import { defaults } from "./utils.ts";
@@ -8,11 +8,11 @@ export interface DateiLagerOptions {
   adminToken: string;
   host: string;
   port: number;
-  data: PathRef;
-  migrations: PathRef;
-  cert: PathRef;
-  key: PathRef;
-  paseto: PathRef;
+  data: Path;
+  migrations: Path;
+  cert: Path;
+  key: Path;
+  paseto: Path;
 }
 
 export class DateiLager {
@@ -45,7 +45,7 @@ export class DateiLager {
   async start(options: Partial<CommandOptions> = {}): Promise<void> {
     options = defaults(options, {
       name: "dateilager",
-      color: colors.magenta,
+      color: stdColors.magenta,
       logFile: logRoot.join(`${options.name ?? "dateilager"}.log`),
       startupProbe: () => retry(() => $`nc -z ${this.options.host} ${this.options.port}`.quiet(), { maxTimeout: 1000 }),
       env: {
@@ -62,13 +62,13 @@ export class DateiLager {
     }
 
     if (!await this.options.cert.exists() || !await this.options.key.exists()) {
-      await this.options.data.mkdir();
+      await this.options.data.ensureDir();
       await $`mkcert -cert-file ${this.options.cert} -key-file ${this.options.key} localhost 127.0.0.1 ::1`
         .withOptions(options);
     }
 
     if (!await this.options.paseto.exists()) {
-      await this.options.paseto.writeText(
+      await this.options.paseto.writeTextFile(
         outdent`-----BEGIN PUBLIC KEY-----
               MCowBQYDK2VwAyEASKQkA/AxlNCdOHTnp5McesmQ+y756VTtGz8Xrt1G0fs=
               -----END PUBLIC KEY-----`,
