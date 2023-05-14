@@ -140,6 +140,30 @@ export class Command implements PromiseLike<ChildProcess> {
     return new ChildProcess(this);
   }
 
+  async output(): Promise<string> {
+    const process = this.spawn();
+
+    const buffer: string[] = [];
+    const promises: Promise<void>[] = [];
+
+    for (const stream of [process.stdout, process.stderr]) {
+      const decoder = new TextDecoder();
+
+      promises.push((async () => {
+        let leftover = "";
+        for await (const chunk of stream) {
+          const lines = (leftover + decoder.decode(chunk)).split("\n");
+          leftover = lines.pop() ?? "";
+          buffer.push(...lines);
+        }
+      })());
+    }
+
+    await Promise.all(promises);
+
+    return buffer.join("\n");
+  }
+
   async then<R = ChildProcess, E = UnexpectedExitCode>(
     onfulfilled?: (value: ChildProcess) => PromiseLike<R> | R,
     onrejected?: (reason: UnexpectedExitCode) => PromiseLike<E> | E,
@@ -160,6 +184,9 @@ export class ChildProcess implements PromiseLike<void> {
   #process!: Deno.ChildProcess;
   #status: Deno.CommandStatus | undefined;
 
+  stdout!: ReadableStream<Uint8Array>;
+  stderr!: ReadableStream<Uint8Array>;
+
   constructor(public command: Command) {
     this.#start();
   }
@@ -177,50 +204,50 @@ export class ChildProcess implements PromiseLike<void> {
   }
 
   #start(): void {
-    if (this.command.options.quiet) {
-      this.command.options.stdout = "null";
-      this.command.options.stderr = "null";
-    } else {
-      this.command.options.stdout = "piped";
-      this.command.options.stderr = "piped";
-    }
-
     if (this.command.options.printCommand) {
       const cmd = this.command.cmd;
       const args = this.command.options.args ?? [];
       console.log(`$ ${shell.quote([cmd, ...args])}`);
     }
 
-    const process = new Deno.Command(this.command.cmd, this.command.options).spawn();
+    const process = new Deno.Command(this.command.cmd, {
+      stdout: "piped",
+      stderr: "piped",
+      ...this.command.options,
+    }).spawn();
+
     this.#process = process;
 
     childProcesses.add(this);
     process.status.finally(() => childProcesses.delete(this));
 
-    if (!this.command.options.quiet) {
-      const encoder = new TextEncoder();
-      const decoder = new TextDecoder();
-      const newline = encoder.encode("\n");
+    for (const streamName of ["stdout", "stderr"] as const) {
+      let stream = process[streamName];
 
-      const padding = " ".repeat(this.command.options.padStart);
-      const name = this.command.options.color(this.command.options.name);
-      const prefix = encoder.encode(`${padding}${name}: `);
+      if (this.command.options.logFile) {
+        this.command.options.logFile.parentOrThrow().mkdirSync({ recursive: true });
+        const file = this.command.options.logFile.openSync({ create: true, append: true });
 
-      for (const streamName of ["stdout", "stderr"] as const) {
-        let stream = process[streamName];
+        let fileStream;
+        [stream, fileStream] = stream.tee();
+        fileStream.pipeTo(file.writable);
+      }
 
-        if (this.command.options.logFile) {
-          this.command.options.logFile.parentOrThrow().mkdirSync({ recursive: true });
-          const file = this.command.options.logFile.openSync({ create: true, append: true });
+      if (!this.command.options.quiet) {
+        let inheritStream;
+        [stream, inheritStream] = stream.tee();
 
-          let fileStream;
-          [stream, fileStream] = stream.tee();
-          fileStream.pipeTo(file.writable);
-        }
+        const encoder = new TextEncoder();
+        const decoder = new TextDecoder();
+        const newline = encoder.encode("\n");
+
+        const padding = " ".repeat(this.command.options.padStart);
+        const name = this.command.options.color(this.command.options.name);
+        const prefix = encoder.encode(`${padding}${name}: `);
 
         (async () => {
           let leftover = "";
-          for await (const chunk of stream) {
+          for await (const chunk of inheritStream) {
             const lines = (leftover + decoder.decode(chunk)).split("\n");
             leftover = lines.pop() ?? "";
 
@@ -233,6 +260,8 @@ export class ChildProcess implements PromiseLike<void> {
           }
         })();
       }
+
+      this[streamName] = stream;
     }
   }
 
