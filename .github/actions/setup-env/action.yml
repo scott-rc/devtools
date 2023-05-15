@@ -7,20 +7,45 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Install nix
+    - name: Install Nix
       uses: nixbuild/nix-quick-install-action@v22
       with:
         nix_conf: experimental-features = nix-command flakes
 
-    - uses: cachix/cachix-action@v12
+    - name: Install cachix
+      uses: cachix/cachix-action@v12
       with:
         name: devtools
         authToken: "${{ inputs.CACHIX_AUTH_TOKEN }}"
         extraPullNames: nix-community
 
-    - name: Add nix devshell to .bash_profile
+    - name: Cache Nix store
+      id: nix-cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ runner.temp }}/.cache/nix
+        key: ${{ runner.os }}-nix-${{ hashFiles('**/flake.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-nix-${{ hashFiles('**/flake.lock') }}
+          ${{ runner.os }}-nix-
+
+    - if: steps.nix-cache.outputs.cache-hit == 'true'
+      name: Import Nix store cache
+      shell: bash
+      run: |
+        CURRENT_SYSTEM=$(nix eval --impure --raw --expr 'builtins.currentSystem')
+        nix copy --no-require-sigs --from ${{ runner.temp }}/.cache/nix "./#devShell.$CURRENT_SYSTEM"
+
+    - name: Add Nix devshell to .bash_profile
       shell: bash
       run: nix print-dev-env --show-trace >> "$HOME/.bash_profile"
+
+    - if: steps.nix-cache.outputs.cache-hit != 'true'
+      name: Export Nix store cache
+      shell: bash
+      run: |
+        CURRENT_SYSTEM=$(nix eval --impure --raw --expr 'builtins.currentSystem')
+        nix copy --no-require-sigs --to ${{ runner.temp }}/.cache/nix "./#devShell.$CURRENT_SYSTEM"
 
     - name: Cache Deno modules
       uses: actions/cache@v3
