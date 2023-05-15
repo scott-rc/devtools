@@ -148,14 +148,9 @@ export class Command implements PromiseLike<ChildProcess> {
     const promises: Promise<void>[] = [];
 
     for (const stream of [process.stdout, process.stderr]) {
-      const decoder = new TextDecoder();
-
       promises.push((async () => {
-        let leftover = "";
-        for await (const chunk of stream) {
-          const lines = (leftover + decoder.decode(chunk)).split("\n");
-          leftover = lines.pop() ?? "";
-          buffer.push(...lines);
+        for await (const line of lines(stream)) {
+          buffer.push(line);
         }
       })());
     }
@@ -239,25 +234,14 @@ export class ChildProcess implements PromiseLike<void> {
         [stream, inheritStream] = stream.tee();
 
         const encoder = new TextEncoder();
-        const decoder = new TextDecoder();
-        const newline = encoder.encode("\n");
-
         const padding = " ".repeat(this.command.options.padStart);
         const name = this.command.options.color(this.command.options.name);
         const prefix = encoder.encode(`${padding}${name}: `);
+        const newline = encoder.encode("\n");
 
         (async () => {
-          let leftover = "";
-          for await (const chunk of inheritStream) {
-            const lines = (leftover + decoder.decode(chunk)).split("\n");
-            leftover = lines.pop() ?? "";
-
-            const buffer = [];
-            for (const line of lines) {
-              buffer.push(prefix, encoder.encode(line), newline);
-            }
-
-            await Deno[streamName].write(stdBytes.concat(...buffer));
+          for await (const line of lines(inheritStream)) {
+            await Deno[streamName].write(stdBytes.concat(prefix, encoder.encode(line), newline));
           }
         })();
       }
@@ -371,4 +355,24 @@ export class FailedStartupProbe extends Error {
     const message = options.message ?? `${command.options.name} startup probe failed`;
     super(message, { cause: options.cause });
   }
+}
+
+/**
+ * Returns UTF-8 lines from a stream.
+ *
+ * @param stream The stream to read lines from.
+ */
+async function* lines(stream: ReadableStream<Uint8Array>): AsyncGenerator<string> {
+  const decoder = new TextDecoder();
+
+  // leftover stores the last line that didn't end with a newline
+  let leftover = "";
+
+  for await (const chunk of stream) {
+    const lines = (leftover + decoder.decode(chunk)).split("\n");
+    leftover = lines.pop() ?? "";
+    for (const line of lines) yield line;
+  }
+
+  return leftover;
 }
